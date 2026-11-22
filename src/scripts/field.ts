@@ -268,6 +268,40 @@ export function startField(systems: System[], reduce: boolean): Field | null {
     mouse.x = mouse.y = -9999;
   });
 
+  // Touch: a finger has no hover, so a press scatters the dots under it and lifting lets the push
+  // drift off downward instead of snapping back. Scrolling (pointercancel) lets go the same way.
+  let drift = 0;
+  const release = () => {
+    cancelAnimationFrame(drift);
+    const x0 = mouse.x;
+    const y0 = mouse.y;
+    if (x0 < -999) return;
+    const start = performance.now();
+    const step = (now: number) => {
+      const k = Math.min(1, (now - start) / 650);
+      mouse.x = x0;
+      mouse.y = y0 + 220 * (1 - Math.pow(1 - k, 3));
+      if (k < 1) drift = requestAnimationFrame(step);
+      else mouse.x = mouse.y = -9999;
+    };
+    drift = requestAnimationFrame(step);
+  };
+  if (!reduce) {
+    addEventListener(
+      "pointerdown",
+      (e) => {
+        if (e.pointerType === "mouse") return;
+        cancelAnimationFrame(drift);
+        mouse.x = e.clientX;
+        mouse.y = e.clientY;
+      },
+      { passive: true },
+    );
+    for (const ev of ["pointerup", "pointercancel"] as const) {
+      addEventListener(ev, (e) => e.pointerType !== "mouse" && release(), { passive: true });
+    }
+  }
+
   document.fonts.ready.then(() => {
     resize();
     live.forEach(upload);

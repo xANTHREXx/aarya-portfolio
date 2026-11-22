@@ -2,6 +2,7 @@ import Lenis from "lenis";
 import { animate, inView, stagger } from "motion";
 import { headline, startField, type System } from "./field";
 import { illustrations } from "./illustrations";
+import { heroDust } from "./hero-dust";
 import { river } from "./river";
 import { stage } from "./stage";
 import { enterY, leg, mountainShape, textSource } from "./journey";
@@ -21,13 +22,90 @@ export function initSite() {
   headerBehaviour();
   const riverOn = startParticles(reduce);
   reloadAcrossBreakpoint();
-  heroEntrance(reduce, riverOn);
+  heroEntrance(reduce);
+  if (!riverOn) tagReveals();
   reveals(reduce);
 
   if (finePointer && !reduce) {
     cursor();
     magnetic();
   }
+  if (!finePointer) touchFeel(reduce);
+  if (matchMedia("(max-width: 760px)").matches) {
+    dock();
+    scrollProgress();
+  }
+}
+
+/** Without the pinned stage (phones, tablets, reduced motion) each block rises in as it arrives. */
+function tagReveals() {
+  const sel = ".project-art, .project-copy, .about-cols, .exp-head, .exp-claims li, .exp-foot > div";
+  for (const el of document.querySelectorAll<HTMLElement>(sel)) el.setAttribute("data-reveal", "");
+}
+
+/** Tap feedback and a light haptic on controls, for devices with no hover. */
+function touchFeel(reduce: boolean) {
+  const buzz = (ms: number) => {
+    if (!reduce && "vibrate" in navigator) navigator.vibrate(ms);
+  };
+  document.addEventListener(
+    "pointerdown",
+    (e) => {
+      const t = (e.target as Element).closest<HTMLElement>(".btn, .dock a, .art-link");
+      if (!t) return;
+      t.classList.add("is-pressed");
+      buzz(8);
+      const off = () => t.classList.remove("is-pressed");
+      addEventListener("pointerup", off, { once: true });
+      addEventListener("pointercancel", off, { once: true });
+    },
+    { passive: true },
+  );
+}
+
+/** Section dock: marks the section in view and tucks away over the footer, which carries its own links. */
+function dock() {
+  const el = document.querySelector<HTMLElement>("[data-dock]");
+  if (!el) return;
+  const links = [...el.querySelectorAll<HTMLAnchorElement>("[data-dock-link]")];
+  const sections = links
+    .map((a) => document.getElementById(a.dataset.dockLink === "contact" ? "contact" : a.dataset.dockLink!))
+    .filter((s): s is HTMLElement => Boolean(s));
+  if (!sections.length) return;
+  const mark = () => {
+    const probe = innerHeight * 0.45;
+    let cur = "";
+    for (const s of sections) if (s.getBoundingClientRect().top <= probe) cur = s.id;
+    for (const a of links) {
+      if (a.dataset.dockLink === cur) a.setAttribute("aria-current", "true");
+      else a.removeAttribute("aria-current");
+    }
+  };
+  let ticking = false;
+  addEventListener(
+    "scroll",
+    () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        mark();
+        ticking = false;
+      });
+    },
+    { passive: true },
+  );
+  mark();
+}
+
+function scrollProgress() {
+  const bar = document.querySelector<HTMLElement>("[data-progress]");
+  if (!bar) return;
+  const update = () => {
+    const max = document.documentElement.scrollHeight - innerHeight;
+    bar.style.setProperty("--p", String(max > 0 ? Math.min(1, scrollY / max) : 0));
+  };
+  addEventListener("scroll", update, { passive: true });
+  update();
 }
 
 function wireAnchors(lenis: Lenis) {
@@ -115,13 +193,15 @@ function startParticles(reduce: boolean) {
     );
   }
 
+  const dust = !st && !reduce && head && hero ? heroDust(head, hero) : null;
+
   const readBlock = document.querySelector<HTMLElement>("[data-read-block]");
   const readPara = document.querySelector<HTMLElement>("[data-read]");
   const read = !reduce && readBlock && readPara ? reading(readBlock, readPara) : null;
 
   const systems: System[] = [
     ...[...document.querySelectorAll<HTMLElement>("[data-pt-head]")].map(headline),
-    ...(st ? [river(head!, hero!, art!, root!, pin!), st.system, ...legs] : illustrations(false)),
+    ...(st ? [river(head!, hero!, art!, root!, pin!), st.system, ...legs] : [...(dust ? [dust] : []), ...illustrations(false)]),
     ...(read ? [read] : []),
   ];
 
@@ -130,6 +210,7 @@ function startParticles(reduce: boolean) {
   const html = document.documentElement;
   html.classList.add("pt");
   if (read) html.classList.add("read");
+  if (dust) html.classList.add("river");
   if (st) {
     html.classList.add("river");
     st.start(field);
@@ -137,9 +218,10 @@ function startParticles(reduce: boolean) {
   return Boolean(st);
 }
 
-function heroEntrance(reduce: boolean, riverOn: boolean) {
+function heroEntrance(reduce: boolean) {
   if (reduce) return;
-  if (!riverOn) {
+  // The particle headline (desktop river or phone dust) replaces the line slide-in.
+  if (!document.documentElement.classList.contains("river")) {
     const lines = document.querySelectorAll<HTMLElement>(".hl > span");
     animate(lines, { y: ["105%", "0%"] }, { duration: 1.1, delay: stagger(0.08, { startDelay: 0.1 }), ease: easeOut });
   }
