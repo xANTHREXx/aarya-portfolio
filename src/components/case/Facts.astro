@@ -1,0 +1,85 @@
+---
+import type { Fact } from "../../data/cases";
+
+interface Props {
+  facts: Fact[];
+  note?: string;
+}
+
+const { facts, note } = Astro.props;
+---
+
+<div class="facts-container">
+  <dl class="facts-grid">
+    {facts.map((fact) => (
+      <div class="fact-row">
+        <dt class="fact-value">{fact.value}</dt>
+        <dd class="fact-body">
+          <span class="fact-label">{fact.label}</span>
+          {fact.note && <span class="fact-note">{fact.note}</span>}
+        </dd>
+      </div>
+    ))}
+  </dl>
+  {note && <p class="facts-note">— {note}</p>}
+</div>
+
+<style>
+  .facts-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: clamp(24px, 4vw, 48px);
+    row-gap: clamp(24px, 4vh, 40px);
+    margin: 0;
+    padding: 0;
+  }
+
+  .fact-row {
+    border-top: 1px solid var(--rule);
+    padding-top: clamp(16px, 2.5vh, 24px);
+  }
+
+  .fact-value {
+    font-family: var(--display);
+    font-weight: 330;
+    font-size: clamp(2rem, 3.4vw, 3rem);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink);
+  }
+
+  .fact-body {
+    margin: 0;
+  }
+
+  .fact-label {
+    display: block;
+    margin-top: 10px;
+    color: var(--ink);
+    font-size: 1rem;
+    line-height: 1.4;
+  }
+
+  .fact-note {
+    display: block;
+    margin-top: 6px;
+    color: var(--ink-2);
+    font-size: 0.92rem;
+    line-height: 1.45;
+  }
+
+  .facts-note {
+    margin-top: clamp(28px, 4vh, 40px);
+    color: var(--ink-2);
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+
+  @media (max-width: 760px) {
+    .facts-grid {
+      grid-template-columns: 1fr;
+      row-gap: 24px;
+    }
+  }
+</style>
