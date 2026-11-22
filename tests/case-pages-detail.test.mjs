@@ -4,6 +4,22 @@ import assert from "node:assert/strict";
 import { getCase } from "../src/data/cases.ts";
 import { read, text, section, decode } from "./helpers.mjs";
 
+/** The decoded <img> tag in `html` whose src is exactly `src`, or null. */
+function imgTag(html, src) {
+  for (const m of html.matchAll(/<img\b[^>]*>/gi)) {
+    const tag = decode(m[0]);
+    const s = tag.match(/\ssrc="([^"]*)"|\ssrc='([^']*)'/i);
+    if (s && (s[1] ?? s[2]) === src) return tag;
+  }
+  return null;
+}
+
+/** The alt attribute of a decoded <img> tag. */
+const altOf = (tag) => {
+  const m = tag.match(/\salt="([^"]*)"|\salt='([^']*)'/i);
+  return m ? (m[1] ?? m[2]) : undefined;
+};
+
 test("clearbill detail", () => {
   const c = getCase("clearbill");
   assert.ok(c);
@@ -13,13 +29,13 @@ test("clearbill detail", () => {
   // and every caption text.
   const shotsSec = section(h, "shots");
   assert.ok(shotsSec !== null, "clearbill shots section must exist");
-  const decodedShotsSec = decode(shotsSec);
   const shotsText = text(shotsSec);
 
   assert.equal(c.shots.length, 6, "clearbill must have 6 shots");
   for (const shot of c.shots) {
-    assert.ok(decodedShotsSec.includes(shot.src), `shots section missing img src: ${shot.src}`);
-    assert.ok(decodedShotsSec.includes(shot.alt), `shots section missing img alt: ${shot.alt}`);
+    const tag = imgTag(shotsSec, shot.src);
+    assert.ok(tag, `shots section missing <img> with src ${shot.src}`);
+    assert.equal(altOf(tag), shot.alt, `wrong alt on ${shot.src}`);
     assert.ok(shotsText.includes(shot.caption), `shots section missing caption: ${shot.caption}`);
   }
 
@@ -40,11 +56,9 @@ test("clearbill detail", () => {
     assert.ok(shippingText.includes(s.trigger), `shipping missing trigger: ${s.trigger}`);
     assert.ok(shippingText.includes(s.route), `shipping missing route: ${s.route}`);
   }
-  assert.ok(
-    /<img\b[^>]*?src=["'][^"']*?\/img\/gh-actions\.jpg["'][^>]*>/i.test(shippingSec) ||
-      shippingSec.includes("/img/gh-actions.jpg"),
-    "shipping section must contain <img with src /img/gh-actions.jpg"
-  );
+  const gh = imgTag(shippingSec, "/img/gh-actions.jpg");
+  assert.ok(gh, "shipping section must contain <img> with src /img/gh-actions.jpg");
+  assert.equal(altOf(gh), c.shippingShot.alt);
 
   // section(h, "next") contains 4 <li elements whose texts equal the 4 next items.
   const nextSec = section(h, "next");
@@ -82,11 +96,9 @@ test("taxi-pipeline detail", () => {
   // section(h, "shots") contains an <img with src /img/sf-loaded.png.
   const shotsSec = section(h, "shots");
   assert.ok(shotsSec !== null, "taxi-pipeline shots section must exist");
-  assert.ok(
-    /<img\b[^>]*?src=["'][^"']*?\/img\/sf-loaded\.png["'][^>]*>/i.test(shotsSec) ||
-      shotsSec.includes("/img/sf-loaded.png"),
-    "shots section must contain <img with src /img/sf-loaded.png"
-  );
+  const sf = imgTag(shotsSec, "/img/sf-loaded.png");
+  assert.ok(sf, "shots section must contain <img> with src /img/sf-loaded.png");
+  assert.equal(altOf(sf), c.shots[0].alt);
 });
 
 test("ibm-batch detail", () => {
