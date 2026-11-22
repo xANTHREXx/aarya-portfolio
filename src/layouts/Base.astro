@@ -1,0 +1,195 @@
+---
+import "../styles/global.css";
+import { person } from "../data/site";
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = `${person.name} — data pipelines, DevOps and applied AI`,
+  description = "Aarya Patil builds data and AI systems that are tested before they ship. Application Developer at IBM, Bengaluru. Creator of ClearBill.",
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#131210" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <script is:inline>
+      document.documentElement.classList.add("js");
+    </script>
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <header class="bar" data-bar>
+      <a href="/" class="bar-name">{person.name}</a>
+      <nav aria-label="Primary">
+        <a href="/#work" class="link-line">Work</a>
+        <a href="/#about" class="link-line">About</a>
+        <a href="/#experience" class="link-line">Experience</a>
+        <a href="/#contact" class="link-line">Contact</a>
+      </nav>
+      <p class="bar-time mono"><span>{person.city}</span> <time data-clock>--:--</time> IST</p>
+    </header>
+
+    <main id="main">
+      <slot />
+    </main>
+
+    <div class="cursor" aria-hidden="true" data-cursor-el>
+      <span class="cursor-dot"></span>
+      <span class="cursor-label" data-cursor-label></span>
+    </div>
+
+    <script>
+      import { initSite } from "../scripts/site";
+      initSite();
+    </script>
+  </body>
+</html>
+
+<style>
+  .skip {
+    position: fixed;
+    left: 12px;
+    top: -60px;
+    z-index: 100;
+    background: var(--ink);
+    color: var(--bg);
+    padding: 8px 14px;
+    border-radius: 4px;
+    transition: top 0.2s var(--ease-out);
+  }
+  .skip:focus {
+    top: 12px;
+  }
+
+  .bar {
+    position: fixed;
+    inset: 0 0 auto;
+    z-index: 50;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 24px;
+    padding: 20px var(--gutter);
+    transition: transform 0.5s var(--ease-out), background-color 0.3s ease;
+  }
+  :global(.bar.is-hidden) {
+    transform: translateY(-110%);
+  }
+  :global(.bar.is-solid) {
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: blur(10px);
+  }
+  .bar-name {
+    white-space: nowrap;
+    font-family: var(--display);
+    font-weight: 500;
+    font-size: 1.05rem;
+    letter-spacing: -0.01em;
+  }
+  .bar nav {
+    display: flex;
+    gap: clamp(16px, 2.4vw, 36px);
+    font-size: 0.95rem;
+    color: var(--ink-2);
+  }
+  .bar nav a:hover {
+    color: var(--ink);
+  }
+  .bar-time {
+    justify-self: end;
+    white-space: nowrap;
+    color: var(--ink-2);
+  }
+  .bar-time span {
+    color: var(--ink-3);
+  }
+
+  @media (max-width: 760px) {
+    .bar {
+      grid-template-columns: 1fr auto;
+    }
+    .bar nav {
+      display: none;
+    }
+  }
+
+  .cursor {
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 90;
+    pointer-events: none;
+    display: none;
+  }
+  :global(html.has-cursor) .cursor {
+    display: block;
+  }
+  :global(html.has-cursor),
+  :global(html.has-cursor a),
+  :global(html.has-cursor button) {
+    cursor: none;
+  }
+  .cursor-dot {
+    position: absolute;
+    left: -5px;
+    top: -5px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--ink);
+    transition:
+      transform 0.35s var(--ease-out),
+      background-color 0.25s ease,
+      opacity 0.2s ease;
+  }
+  .cursor-label {
+    position: absolute;
+    left: 0;
+    top: 0;
+    transform: translate(-50%, -50%) scale(0.6);
+    font-family: var(--sans);
+    font-size: 0.8rem;
+    font-weight: 560;
+    letter-spacing: 0.01em;
+    color: var(--bg);
+    white-space: nowrap;
+    opacity: 0;
+    transition:
+      opacity 0.2s ease,
+      transform 0.35s var(--ease-out);
+  }
+  :global(.cursor.is-link) .cursor-dot {
+    transform: scale(4.2);
+    background: color-mix(in srgb, var(--ink) 18%, transparent);
+  }
+  :global(.cursor.is-label) .cursor-dot {
+    transform: scale(7.6);
+    background: var(--ink);
+  }
+  :global(.cursor.is-label) .cursor-label {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  :global(.cursor.is-label.is-invert) .cursor-dot {
+    background: var(--bg);
+    box-shadow: 0 0 0 0.13px var(--ink-3);
+  }
+  :global(.cursor.is-label.is-invert) .cursor-label {
+    color: var(--ink);
+  }
+  :global(.cursor.is-down) .cursor-dot {
+    transform: scale(0.7);
+  }
+</style>
