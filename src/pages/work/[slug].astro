@@ -4,6 +4,11 @@ import SiteFooter from "../../components/SiteFooter";
 import CaseSection from "../../components/case/CaseSection.astro";
 import Flow from "../../components/case/Flow.astro";
 import Facts from "../../components/case/Facts.astro";
+import Shots from "../../components/case/Shots.astro";
+import CodeBlocks from "../../components/case/CodeBlocks.astro";
+import Decisions from "../../components/case/Decisions.astro";
+import Shipping from "../../components/case/Shipping.astro";
+import NextList from "../../components/case/NextList.astro";
 import { cases, getCase, type CaseStudy } from "../../data/cases";
 
 export function getStaticPaths() {
@@ -82,7 +87,39 @@ const factsLabel = c.slug === "clearbill" || c.slug === "taxi-pipeline" ? "What 
       </CaseSection>
     )}
 
-    <!-- detail sections -->
+    {c.shots && c.shots.length > 0 && (
+      <CaseSection name="shots" label="Screens">
+        <Shots shots={c.shots} />
+      </CaseSection>
+    )}
+
+    {c.snippets && c.snippets.length > 0 && (
+      <CaseSection name="code" label="The real code">
+        <CodeBlocks snippets={c.snippets} />
+      </CaseSection>
+    )}
+
+    {c.decisions && c.decisions.length > 0 && (
+      <CaseSection name="decisions" label="Decisions">
+        <Decisions decisions={c.decisions} />
+      </CaseSection>
+    )}
+
+    {c.shipping && c.shipping.length > 0 && (
+      <CaseSection name="shipping" label="How it ships">
+        <Shipping ships={c.shipping} shot={c.shippingShot} />
+      </CaseSection>
+    )}
+
+    {c.next && c.next.length > 0 && (
+      <CaseSection name="next" label="What I'd fix next">
+        <NextList items={c.next} />
+      </CaseSection>
+    )}
+
+    {c.closing && (
+      <p class="closing">{c.closing}</p>
+    )}
 
     <a data-next-case href={`/work/${next.slug}/`} class="next-case">
       <span class="next-label">Next project</span>
@@ -202,6 +239,14 @@ const factsLabel = c.slug === "clearbill" || c.slug === "taxi-pipeline" ? "What 
     padding: clamp(80px, 14vh, 160px) 0;
     border-top: 1px solid var(--rule);
     text-decoration: none;
+  }
+
+  .closing {
+    color: var(--ink-3);
+    font-size: 0.88rem;
+    line-height: 1.5;
+    margin-top: clamp(40px, 6vh, 60px);
+    margin-bottom: clamp(24px, 4vh, 40px);
   }
 
   .next-label {

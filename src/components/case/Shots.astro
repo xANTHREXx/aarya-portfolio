@@ -1,0 +1,85 @@
+---
+import type { Shot } from "../../data/cases";
+
+interface Props {
+  shots: Shot[];
+}
+
+const { shots } = Astro.props;
+const isSingle = shots.length === 1;
+---
+
+{
+  isSingle ? (
+    <figure class="shot-single">
+      <img src={shots[0].src} alt={shots[0].alt} loading="lazy" decoding="async" />
+      {shots[0].caption && <figcaption>{shots[0].caption}</figcaption>}
+    </figure>
+  ) : (
+    <div class="shots-strip">
+      {shots.map((shot) => (
+        <figure class="shot-item">
+          <img src={shot.src} alt={shot.alt} loading="lazy" decoding="async" />
+          {shot.caption && <figcaption>{shot.caption}</figcaption>}
+        </figure>
+      ))}
+    </div>
+  )
+}
+
+<style>
+  .shots-strip {
+    display: flex;
+    gap: 20px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding-bottom: 12px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--rule) transparent;
+  }
+
+  .shots-strip::-webkit-scrollbar {
+    height: 6px;
+  }
+
+  .shots-strip::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .shots-strip::-webkit-scrollbar-thumb {
+    background-color: var(--rule);
+    border-radius: 999px;
+  }
+
+  .shot-item {
+    flex: 0 0 min(240px, 70%);
+    scroll-snap-align: start;
+    margin: 0;
+  }
+
+  .shot-item img {
+    width: 100%;
+    border-radius: 18px;
+    border: 1px solid var(--rule);
+    display: block;
+  }
+
+  .shot-single {
+    width: 100%;
+    margin: 0;
+  }
+
+  .shot-single img {
+    width: 100%;
+    border-radius: 12px;
+    border: 1px solid var(--rule);
+    display: block;
+  }
+
+  figcaption {
+    margin-top: 10px;
+    font-size: 0.9rem;
+    color: var(--ink-2);
+    line-height: 1.4;
+  }
+</style>
