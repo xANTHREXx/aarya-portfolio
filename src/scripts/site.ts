@@ -5,6 +5,7 @@ import { illustrations } from "./illustrations";
 import { heroDust } from "./hero-dust";
 import { river } from "./river";
 import { stage } from "./stage";
+import { caseArt, caseTitle } from "./case";
 import { enterY, leg, mountainShape, textSource } from "./journey";
 import { reading } from "./reading";
 import { footerRange } from "../data/site";
@@ -18,13 +19,13 @@ export function initSite() {
   const lenis = reduce ? null : new Lenis({ autoRaf: true, lerp: 0.09 });
   if (lenis) wireAnchors(lenis);
 
-  startClock();
   headerBehaviour();
   const riverOn = startParticles(reduce);
   reloadAcrossBreakpoint();
   heroEntrance(reduce);
   if (!riverOn) tagReveals();
   reveals(reduce);
+  caseReveals();
 
   if (finePointer && !reduce) {
     cursor();
@@ -68,6 +69,12 @@ function dock() {
   const el = document.querySelector<HTMLElement>("[data-dock]");
   if (!el) return;
   const links = [...el.querySelectorAll<HTMLAnchorElement>("[data-dock-link]")];
+  // Case pages: the footer is on this page, so Contact scrolls to it; Work stays marked as the section you're in.
+  if (location.pathname !== "/") {
+    links.find((a) => a.dataset.dockLink === "contact")?.setAttribute("href", "#contact");
+    links.find((a) => a.dataset.dockLink === "work")?.setAttribute("aria-current", "true");
+    return;
+  }
   const sections = links
     .map((a) => document.getElementById(a.dataset.dockLink === "contact" ? "contact" : a.dataset.dockLink!))
     .filter((s): s is HTMLElement => Boolean(s));
@@ -119,21 +126,6 @@ function wireAnchors(lenis: Lenis) {
       history.replaceState(null, "", hash);
     });
   }
-}
-
-function startClock() {
-  const el = document.querySelector<HTMLTimeElement>("[data-clock]");
-  if (!el) return;
-  const fmt = new Intl.DateTimeFormat("en-GB", {
-    hour: "2-digit",
-    minute: "2-digit",
-    timeZone: "Asia/Kolkata",
-  });
-  const tick = () => {
-    el.textContent = fmt.format(new Date());
-  };
-  tick();
-  setInterval(tick, 20_000);
 }
 
 function headerBehaviour() {
@@ -199,10 +191,17 @@ function startParticles(reduce: boolean) {
   const readPara = document.querySelector<HTMLElement>("[data-read]");
   const read = !reduce && readBlock && readPara ? reading(readBlock, readPara) : null;
 
+  const caseTitleEl = document.querySelector<HTMLElement>("[data-case-title]");
+  const caseSystems: System[] = [
+    ...(caseTitleEl && !reduce ? [caseTitle(caseTitleEl)] : []),
+    ...[...document.querySelectorAll<HTMLElement>("[data-case-art]")].map((el) => caseArt(el, el.dataset.caseArt ?? "")),
+  ];
+
   const systems: System[] = [
     ...[...document.querySelectorAll<HTMLElement>("[data-pt-head]")].map(headline),
     ...(st ? [river(head!, hero!, art!, root!, pin!), st.system, ...legs] : [...(dust ? [dust] : []), ...illustrations(false)]),
     ...(read ? [read] : []),
+    ...caseSystems,
   ];
 
   const field = startField(systems, reduce);
@@ -210,6 +209,7 @@ function startParticles(reduce: boolean) {
   const html = document.documentElement;
   html.classList.add("pt");
   if (read) html.classList.add("read");
+  if (caseTitleEl && !reduce) html.classList.add("case-pt");
   if (dust) html.classList.add("river");
   if (st) {
     html.classList.add("river");
@@ -246,6 +246,47 @@ function reveals(reduce: boolean) {
       { amount: 0.35 },
     );
   }
+}
+
+/**
+ * Project pages: each block marked data-r fades and rises in as it arrives, and each section's rule
+ * draws across. Blocks that arrive together are staggered top-to-bottom, left-to-right.
+ */
+function caseReveals() {
+  const html = document.documentElement;
+  if (!html.classList.contains("cr")) return;
+  (window as unknown as { __cr: boolean }).__cr = true;
+
+  let first = true;
+  const io = new IntersectionObserver(
+    (entries) => {
+      const hits = entries
+        .filter((e) => e.isIntersecting)
+        .map((e) => ({ el: e.target as HTMLElement, r: e.boundingClientRect }))
+        .sort((a, b) => a.r.top - b.r.top || a.r.left - b.r.left);
+      // On load the hero waits a beat for the particle title to start gathering.
+      const base = first ? 0.25 : 0;
+      first = false;
+      hits.forEach(({ el }, i) => {
+        io.unobserve(el);
+        if (el.hasAttribute("data-r-line")) {
+          el.classList.add("is-in");
+          return;
+        }
+        const d = base + Math.min(i * 0.08, 0.6);
+        el.style.setProperty("--d", `${d}s`);
+        el.classList.add("is-in");
+        // Once settled, step out of the way so hover transitions behave as normal.
+        window.setTimeout(() => {
+          el.removeAttribute("data-r");
+          el.classList.remove("is-in");
+          el.style.removeProperty("--d");
+        }, (d + 1.2) * 1000);
+      });
+    },
+    { threshold: 0.12, rootMargin: "0px 0px -8% 0px" },
+  );
+  for (const el of document.querySelectorAll<HTMLElement>("[data-r], [data-r-line]")) io.observe(el);
 }
 
 function cursor() {

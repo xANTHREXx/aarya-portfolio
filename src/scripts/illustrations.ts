@@ -281,6 +281,12 @@ export function projectCloud(slug: string, w: number, h: number) {
   return builders[slug]?.(w, h) ?? null;
 }
 
+/** A project's illustration as a standalone piece (used on case pages): assembles from scattered particles. */
+export function caseCloud(slug: string, w: number, h: number) {
+  if (slug === "clearbill") return clearbill(w, h, false);
+  return builders[slug]?.(w, h) ?? new Cloud((x, y) => [x, y]);
+}
+
 /** `fed`: the ClearBill bill is delivered by the hero stream instead of assembling on its own. */
 export function illustrations(fed: boolean): System[] {
   const out: System[] = [];

@@ -1,4 +1,7 @@
 ---
+import Icon from "./Icon.astro";
+import { sectionIcon } from "./icons";
+
 interface Props {
   name: string;
   label: string;
@@ -7,8 +10,11 @@ interface Props {
 const { name, label } = Astro.props;
 ---
 
-<section class="case-section" data-case-section={name}>
-  <h2 class="case-section-title">{label}</h2>
+<section class="case-section" data-case-section={name} data-r-line>
+  <h2 class="case-section-title" data-r>
+    <span class="case-section-icon"><Icon name={sectionIcon[name] ?? "Layers"} size={17} /></span>
+    {label}
+  </h2>
   <div class="case-section-content">
     <slot />
   </div>
@@ -20,7 +26,18 @@ const { name, label } = Astro.props;
     grid-template-columns: minmax(0, 3fr) minmax(0, 9fr);
     gap: clamp(24px, 4vw, 64px);
     padding: clamp(56px, 9vh, 96px) 0;
-    border-top: 1px solid var(--rule);
+    position: relative;
+  }
+
+  /* The rule above each section; it draws across when the section arrives (see global.css). */
+  .case-section::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto;
+    height: 1px;
+    background: var(--rule);
+    transform-origin: left;
+    transition: transform 1.4s var(--ease-out);
   }
 
   .case-section-title {
@@ -31,6 +48,21 @@ const { name, label } = Astro.props;
     align-self: start;
     position: sticky;
     top: 96px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .case-section-icon {
+    display: inline-grid;
+    place-items: center;
+    flex: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid var(--rule);
+    color: var(--ink);
+    transition: transform 0.9s var(--ease-out) calc(var(--d, 0s) + 0.1s);
   }
 
   .case-section-content {
@@ -45,6 +77,13 @@ const { name, label } = Astro.props;
 
     .case-section-title {
       position: static;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .case-section {
+      padding: 44px 0;
+      gap: 20px;
     }
   }
 </style>

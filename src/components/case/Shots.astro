@@ -11,14 +11,14 @@ const isSingle = shots.length === 1;
 
 {
   isSingle ? (
-    <figure class="shot-single">
+    <figure class="shot-single" data-r>
       <img src={shots[0].src} alt={shots[0].alt} loading="lazy" decoding="async" />
       {shots[0].caption && <figcaption>{shots[0].caption}</figcaption>}
     </figure>
   ) : (
     <div class="shots-strip">
       {shots.map((shot) => (
-        <figure class="shot-item">
+        <figure class="shot-item" data-r>
           <img src={shot.src} alt={shot.alt} loading="lazy" decoding="async" />
           {shot.caption && <figcaption>{shot.caption}</figcaption>}
         </figure>
@@ -36,6 +36,22 @@ const isSingle = shots.length === 1;
     padding-bottom: 12px;
     scrollbar-width: thin;
     scrollbar-color: var(--rule) transparent;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Phones: the strip runs edge to edge and the next screen peeks in, so it reads as swipeable. */
+  @media (max-width: 760px) {
+    .shots-strip {
+      margin-inline: calc(var(--gutter) * -1);
+      padding-inline: var(--gutter);
+      scroll-padding-inline: var(--gutter);
+      gap: 14px;
+      scrollbar-width: none;
+    }
+    .shots-strip .shot-item {
+      flex-basis: min(280px, 76vw);
+    }
   }
 
   .shots-strip::-webkit-scrollbar {

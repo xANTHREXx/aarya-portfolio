@@ -7,13 +7,36 @@ interface Props {
 }
 
 const { facts, note } = Astro.props;
+
+/** Split a value into runs: each digit rolls on its own; everything else stays put. */
+const parts = (v: string) =>
+  (v.match(/[0-9]|[^0-9]+/g) ?? []).map((s) => (/[0-9]/.test(s) ? { d: Number(s) } : { t: s }));
+const digits = "01234567890123456789".split("");
 ---
 
-<div class="facts-container">
+<div class="facts-container" data-facts>
   <dl class="facts-grid">
     {facts.map((fact) => (
-      <div class="fact-row">
-        <dt class="fact-value">{fact.value}</dt>
+      <div class="fact-row" data-r>
+        <dt class="fact-value">
+          <span class="sr-only">{fact.value}</span>
+          <span class="fact-roll" aria-hidden="true">
+            {(() => {
+              let i = 0;
+              const ps = parts(fact.value);
+              const n = ps.filter((p) => "d" in p).length;
+              return ps.map((p) =>
+                "d" in p ? (
+                  <span class="roll" style={`--to:${10 + (p.d as number)};--i:${n - ++i}`}>
+                    <span class="roll-strip">{digits.map((d) => <span>{d}</span>)}</span>
+                  </span>
+                ) : (
+                  <span class="roll-t">{p.t}</span>
+                ),
+              );
+            })()}
+          </span>
+        </dt>
         <dd class="fact-body">
           <span class="fact-label">{fact.label}</span>
           {fact.note && <span class="fact-note">{fact.note}</span>}
@@ -21,10 +44,80 @@ const { facts, note } = Astro.props;
       </div>
     ))}
   </dl>
-  {note && <p class="facts-note">— {note}</p>}
+  {note && <p class="facts-note" data-r>— {note}</p>}
 </div>
 
+<script>
+  // Odometer: numbers start at zero and roll into place the first time the facts come into view.
+  // Without JS (or with reduced motion) the final numbers simply show.
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (!reduce && "IntersectionObserver" in window) {
+    for (const box of document.querySelectorAll<HTMLElement>("[data-facts]")) {
+      const rows = [...box.querySelectorAll<HTMLElement>(".fact-row")];
+      for (const r of rows) r.dataset.roll = "armed";
+      const io = new IntersectionObserver(
+        (entries) => {
+          for (const e of entries) {
+            if (!e.isIntersecting) continue;
+            io.unobserve(e.target);
+            const el = e.target as HTMLElement;
+            el.style.setProperty("--row", String(rows.indexOf(el) % 2));
+            requestAnimationFrame(() => (el.dataset.roll = "go"));
+          }
+        },
+        { threshold: 0.6 },
+      );
+      for (const r of rows) io.observe(r);
+    }
+  }
+</script>
+
 <style>
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .fact-roll {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  .roll-t {
+    white-space: pre;
+  }
+
+  /* One digit window: exactly one line tall; the strip of 0–9 twice slides through it. */
+  .roll {
+    display: inline-block;
+    height: 1.05em;
+    overflow: hidden;
+  }
+
+  .roll-strip {
+    display: flex;
+    flex-direction: column;
+    transform: translateY(calc(var(--to) * -1.05em));
+  }
+
+  .roll-strip > span {
+    height: 1.05em;
+  }
+
+  .fact-row[data-roll="armed"] .roll-strip {
+    transform: translateY(0);
+  }
+
+  .fact-row[data-roll="go"] .roll-strip {
+    transition: transform calc(1.1s + var(--i) * 0.14s) cubic-bezier(0.16, 1, 0.3, 1);
+    transition-delay: calc(var(--row, 0) * 0.12s);
+  }
+
   .facts-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));

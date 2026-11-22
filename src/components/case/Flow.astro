@@ -1,5 +1,7 @@
 ---
 import type { Step } from "../../data/cases";
+import Icon from "./Icon.astro";
+import { whereIcon } from "./icons";
 
 interface Props {
   steps: Step[];
@@ -14,10 +16,10 @@ const { steps, note } = Astro.props;
     {steps.map((step, i) => {
       const idx = String(i + 1).padStart(2, "0");
       return (
-        <li class:list={["flow-step", { "is-key": step.key }]}>
-          <span class="flow-index mono">{idx}</span>
+        <li class:list={["flow-step", { "is-key": step.key }]} data-r>
+          <span class="flow-node" aria-hidden="true"><Icon name={whereIcon(step.where)} size={20} /></span>
           <div class="flow-body">
-            <span class="flow-where mono">{step.where}</span>
+            <span class="flow-where mono"><span class="flow-index">{idx}</span> · {step.where}</span>
             <h3 class="flow-title">
               {step.key && <span class="key-dot" aria-hidden="true" />}
               {step.title}
@@ -28,7 +30,7 @@ const { steps, note } = Astro.props;
       );
     })}
   </ol>
-  {note && <p class="flow-note">{note}</p>}
+  {note && <p class="flow-note" data-r>{note}</p>}
 </div>
 
 <style>
@@ -39,23 +41,41 @@ const { steps, note } = Astro.props;
   }
 
   .flow-step {
+    position: relative;
     display: grid;
     grid-template-columns: 48px minmax(0, 1fr);
     gap: clamp(16px, 3vw, 32px);
-    padding: clamp(20px, 3.5vh, 28px) 0;
-    border-top: 1px solid var(--rule);
+    padding-bottom: clamp(28px, 4.5vh, 40px);
   }
 
-  .flow-step:first-child {
-    border-top: none;
-    padding-top: 0;
+  .flow-step:not(:last-child)::before {
+    content: "";
+    position: absolute;
+    left: 23px;
+    top: 56px;
+    bottom: 6px;
+    width: 2px;
+    background: radial-gradient(circle, var(--ink-3) 1px, transparent 1.4px) 0 0 / 2px 6px repeat-y;
+  }
+
+  .flow-node {
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    border: 1px solid var(--rule);
+    background: var(--bg-raise);
+    color: var(--ink-2);
+  }
+
+  .flow-step.is-key .flow-node {
+    border-color: var(--flag);
+    color: var(--flag);
   }
 
   .flow-index {
-    font-family: var(--mono);
-    color: var(--ink-3);
-    font-size: 0.88rem;
-    line-height: 1.5;
+    color: var(--ink-2);
   }
 
   .flow-step.is-key .flow-index {
@@ -69,11 +89,12 @@ const { steps, note } = Astro.props;
   .flow-where {
     display: block;
     font-family: var(--mono);
-    font-size: 0.78rem;
+    font-size: 0.82rem;
     text-transform: uppercase;
     letter-spacing: 0.04em;
     color: var(--ink-3);
     margin-bottom: 6px;
+    padding-top: 2px;
   }
 
   .flow-title {
@@ -112,8 +133,17 @@ const { steps, note } = Astro.props;
 
   @media (max-width: 760px) {
     .flow-step {
-      grid-template-columns: 1fr;
-      gap: 8px;
+      grid-template-columns: 40px minmax(0, 1fr);
+      gap: 14px;
+    }
+    .flow-node {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+    }
+    .flow-step:not(:last-child)::before {
+      left: 19px;
+      top: 48px;
     }
   }
 </style>

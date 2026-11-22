@@ -10,7 +10,7 @@ const { snippets } = Astro.props;
 
 <div class="code-blocks">
   {snippets.map((snippet) => (
-    <figure class="code-figure">
+    <figure class="code-figure" data-r>
       <figcaption class="code-header">
         <span class="code-title">{snippet.title}</span>
         <span class="code-file">{snippet.file}</span>
@@ -36,7 +36,8 @@ const { snippets } = Astro.props;
     display: flex;
     justify-content: space-between;
     align-items: baseline;
-    gap: 16px;
+    flex-wrap: wrap;
+    gap: 4px 16px;
     margin-bottom: 10px;
   }
 
@@ -64,6 +65,15 @@ const { snippets } = Astro.props;
     margin: 0;
     scrollbar-width: thin;
     scrollbar-color: var(--rule) transparent;
+    overscroll-behavior-x: contain;
+    tab-size: 2;
+  }
+
+  @media (max-width: 600px) {
+    pre {
+      padding: 16px;
+      font-size: 0.78rem;
+    }
   }
 
   pre::-webkit-scrollbar {

@@ -25,13 +25,13 @@ const marked = new Set(["production", "failures", "checked"]);
           what the model says. Everything gets tested before it ships.
         </p>
         <div class="hero-actions">
-          <a class="btn" href="#work" data-magnetic data-cursor="Scroll">
+          <a class="btn" href={`mailto:${person.email}`} data-magnetic data-cursor="Email">
+            <span>Let's talk</span>
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4.5h12v7H2zM2.5 5l5.5 4.2L13.5 5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" /></svg>
+          </a>
+          <a class="btn btn-quiet" href="#work" data-magnetic data-cursor="Scroll">
             <span>See the work</span>
             <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3v10M4 9l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" /></svg>
-          </a>
-          <a class="btn btn-quiet" href="/aarya-patil-resume.pdf" download="Aarya-Patil-resume.pdf" data-magnetic data-cursor="PDF">
-            <span>Download résumé</span>
-            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.5v8M4.5 7 8 10.5 11.5 7M3 13.5h10" fill="none" stroke="currentColor" stroke-width="1.5" /></svg>
           </a>
         </div>
       </div>

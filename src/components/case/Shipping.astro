@@ -12,7 +12,7 @@ const { ships, shot } = Astro.props;
 <div class="shipping">
   <div class="shipping-list">
     {ships.map((ship) => (
-      <div class="shipping-row">
+      <div class="shipping-row" data-r>
         <span class="shipping-trigger">{ship.trigger}</span>
         <span class="shipping-route">{ship.route}</span>
       </div>
@@ -20,7 +20,7 @@ const { ships, shot } = Astro.props;
   </div>
 
   {shot && (
-    <figure class="shipping-shot">
+    <figure class="shipping-shot" data-r>
       <img src={shot.src} alt={shot.alt} loading="lazy" decoding="async" />
       {shot.caption && <figcaption>{shot.caption}</figcaption>}
     </figure>
@@ -52,7 +52,7 @@ const { ships, shot } = Astro.props;
 
   .shipping-trigger {
     font-family: var(--mono);
-    font-size: 0.78rem;
+    font-size: 0.82rem;
     text-transform: uppercase;
     letter-spacing: 0.04em;
     color: var(--flag);

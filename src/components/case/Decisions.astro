@@ -10,7 +10,7 @@ const { decisions } = Astro.props;
 
 <div class="decisions-list">
   {decisions.map((decision) => (
-    <div class="decision-item">
+    <div class="decision-item" data-r>
       <h3 class="decision-title">{decision.title}</h3>
       <p class="decision-body">{decision.body}</p>
     </div>

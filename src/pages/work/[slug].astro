@@ -9,7 +9,9 @@ import CodeBlocks from "../../components/case/CodeBlocks.astro";
 import Decisions from "../../components/case/Decisions.astro";
 import Shipping from "../../components/case/Shipping.astro";
 import NextList from "../../components/case/NextList.astro";
-import { cases, getCase, type CaseStudy } from "../../data/cases";
+import Icon from "../../components/case/Icon.astro";
+import { metaIcon } from "../../components/case/icons";
+import { cases, type CaseStudy } from "../../data/cases";
 
 export function getStaticPaths() {
   return cases.map((c) => ({
@@ -25,51 +27,76 @@ interface Props {
 const { c } = Astro.props;
 const currentIndex = cases.findIndex((item) => item.slug === c.slug);
 const next = cases[(currentIndex + 1) % cases.length];
+const after = cases[(currentIndex + 2) % cases.length];
+const upcoming = [
+  { c: next, label: "Next project", attr: { "data-next-case": "" } },
+  { c: after, label: "After that", attr: { "data-more-case": "" } },
+];
 
 const factsLabel = c.slug === "clearbill" || c.slug === "taxi-pipeline" ? "What it shows" : "Results";
 ---
 
 <Base title={`${c.title} — Aarya Patil`} description={c.lead}>
+  <script is:inline>
+    // Arm the scroll reveals before the page paints. If the site script never runs, show everything.
+    if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      document.documentElement.classList.add("cr");
+      setTimeout(function () {
+        if (!window.__cr) document.documentElement.classList.remove("cr");
+      }, 4000);
+    }
+  </script>
   <article class="case">
-    <a href="/#work" class="link-line">All work</a>
+    <a href="/#work" class="link-line" data-r>All work</a>
 
     <header class="hero">
-      <h1 class="hero-title">{c.title}</h1>
-      <p class="lead">{c.lead}</p>
+      <div class="hero-copy">
+        <h1 class="hero-title" data-case-title>{c.title}</h1>
+        <p class="lead" data-r>{c.lead}</p>
 
-      <dl class="meta">
-        {c.meta.map((m) => (
-          <div class="meta-item">
-            <dt class="meta-label">{m.label}</dt>
-            <dd class="meta-value">{m.value}</dd>
+        {c.links && c.links.length > 0 && (
+          <div class="links-row" data-r>
+            {c.links.map((link, i) => {
+              const isExternal = /^https?:/.test(link.href);
+              const targetRel = isExternal ? { target: "_blank", rel: "noopener" } : {};
+              return i === 0 ? (
+                <a class="pill-btn" href={link.href} {...targetRel} data-magnetic data-cursor="Open">
+                  <span>{link.label}</span>
+                  <Icon name="ArrowUpRight" size={16} />
+                </a>
+              ) : (
+                <a class="text-link" href={link.href} {...targetRel}>
+                  <span class="link-line">{link.label}</span>
+                  <Icon name="ArrowUpRight" size={14} />
+                </a>
+              );
+            })}
           </div>
-        ))}
-      </dl>
+        )}
+      </div>
 
-      {c.links && c.links.length > 0 && (
-        <div class="links-row">
-          {c.links.map((link, i) => {
-            const isExternal = !link.href.startsWith("/") && !link.href.startsWith("#");
-            const targetRel = isExternal ? { target: "_blank", rel: "noopener" } : {};
-            return i === 0 ? (
-              <a class="pill-btn" href={link.href} {...targetRel}>
-                {link.label}
-              </a>
-            ) : (
-              <a class="link-line" href={link.href} {...targetRel}>
-                {link.label}
-              </a>
-            );
-          })}
-        </div>
-      )}
+      <div class="hero-art" aria-hidden="true">
+        <div class="hero-art-box" data-case-art={c.slug}></div>
+      </div>
     </header>
+
+    <dl class="meta">
+      {c.meta.map((m) => (
+        <div class="meta-item" data-r>
+          <dt class="meta-label">
+            <Icon name={metaIcon[m.label] ?? "Layers"} size={16} />
+            {m.label}
+          </dt>
+          <dd class="meta-value">{m.value}</dd>
+        </div>
+      ))}
+    </dl>
 
     {c.problem && c.problem.length > 0 && (
       <CaseSection name="problem" label="The problem">
         <div class="problem-content">
           {c.problem.map((p) => (
-            <p>{p}</p>
+            <p data-r>{p}</p>
           ))}
         </div>
       </CaseSection>
@@ -118,13 +145,22 @@ const factsLabel = c.slug === "clearbill" || c.slug === "taxi-pipeline" ? "What 
     )}
 
     {c.closing && (
-      <p class="closing">{c.closing}</p>
+      <p class="closing" data-r>{c.closing}</p>
     )}
 
-    <a data-next-case href={`/work/${next.slug}/`} class="next-case">
-      <span class="next-label">Next project</span>
-      <span class="next-title">{next.title}</span>
-    </a>
+    <nav class="upcoming" aria-label="More projects">
+      {upcoming.map(({ c: u, label, attr }) => (
+        <a class="up-card" data-r href={`/work/${u.slug}/`} {...attr} data-cursor="View">
+          <span class="up-top">
+            <span class="up-label mono">{label}</span>
+            <span class="up-arrow"><Icon name="ArrowUpRight" size={20} /></span>
+          </span>
+          <span class="up-art" aria-hidden="true"><span class="up-art-box" data-case-art={u.slug}></span></span>
+          <span class="up-title">{u.title}</span>
+          <span class="up-lead">{u.lead}</span>
+        </a>
+      ))}
+    </nav>
   </article>
 
   <div id="contact" data-footer>
@@ -144,49 +180,70 @@ const factsLabel = c.slug === "clearbill" || c.slug === "taxi-pipeline" ? "What 
   }
 
   .hero {
-    padding-bottom: clamp(48px, 6vh, 64px);
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: clamp(32px, 5vw, 88px);
+    align-items: center;
+    padding: clamp(32px, 6vh, 64px) 0 clamp(40px, 6vh, 64px);
   }
 
   .hero-title {
     font-family: var(--display);
     font-weight: 300;
-    font-size: clamp(3.4rem, 10vw, 9rem);
+    font-size: clamp(3rem, 6vw, 6.4rem);
     line-height: 0.92;
     letter-spacing: -0.045em;
-    margin-top: 40px;
     color: var(--ink);
+    overflow-wrap: anywhere;
+  }
+  :global(html.case-pt) .hero-title {
+    color: transparent;
   }
 
   .lead {
     font-family: var(--display);
     font-weight: 330;
-    font-size: clamp(1.5rem, 2.6vw, 2.4rem);
-    line-height: 1.15;
+    font-size: clamp(1.3rem, 1.9vw, 1.9rem);
+    line-height: 1.18;
     letter-spacing: -0.02em;
     max-width: 30ch;
-    color: var(--ink);
-    margin-top: clamp(28px, 4vh, 40px);
+    color: var(--ink-2);
+    margin-top: clamp(24px, 3.5vh, 36px);
+  }
+
+  .hero-art-box {
+    display: block;
+    width: 100%;
+    aspect-ratio: 7 / 5;
   }
 
   .meta {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 20px clamp(24px, 4vw, 48px);
-    margin-top: clamp(40px, 6vh, 60px);
-    padding-top: clamp(24px, 3.5vh, 36px);
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
     border-top: 1px solid var(--rule);
   }
 
+  .meta-item {
+    padding: 22px 24px 22px 0;
+  }
+  .meta-item + .meta-item {
+    padding-left: 24px;
+    border-left: 1px solid var(--rule);
+  }
+
   .meta-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
     font-family: var(--sans);
     font-size: 0.85rem;
     color: var(--ink-3);
-    margin-bottom: 4px;
+    margin-bottom: 8px;
   }
 
   .meta-value {
-    color: var(--ink-2);
-    font-size: 1rem;
+    color: var(--ink);
+    font-size: 0.98rem;
     line-height: 1.45;
   }
 
@@ -194,33 +251,50 @@ const factsLabel = c.slug === "clearbill" || c.slug === "taxi-pipeline" ? "What 
     display: flex;
     align-items: center;
     flex-wrap: wrap;
-    gap: clamp(16px, 3vw, 28px);
-    margin-top: clamp(36px, 5vh, 48px);
+    gap: 14px 24px;
+    margin-top: clamp(28px, 4vh, 40px);
   }
 
   .pill-btn {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
     border-radius: 999px;
     padding: 14px 22px;
     background: var(--ink);
     color: var(--bg);
     font-weight: 560;
     line-height: 1;
-    text-decoration: none;
-    transition: opacity 0.2s var(--ease-out);
+    transition: background-color 0.25s ease;
   }
 
-  .pill-btn:hover {
-    opacity: 0.9;
+  @media (hover: hover) {
+    .pill-btn:hover {
+      background: #fff;
+    }
+  }
+  .pill-btn {
+    transition:
+      background-color 0.25s ease,
+      transform 0.3s var(--ease-out);
+  }
+  .pill-btn:active {
+    transform: scale(0.97);
   }
 
-  .links-row .link-line {
+  .text-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
     color: var(--ink-2);
     font-size: 0.95rem;
+    transition: color 0.25s ease;
   }
 
-  .links-row .link-line:hover {
-    color: var(--ink);
+  @media (hover: hover) {
+    .text-link:hover {
+      color: var(--ink);
+    }
   }
 
   .problem-content p {
@@ -234,13 +308,6 @@ const factsLabel = c.slug === "clearbill" || c.slug === "taxi-pipeline" ? "What 
     margin-top: 1.25em;
   }
 
-  .next-case {
-    display: block;
-    padding: clamp(80px, 14vh, 160px) 0;
-    border-top: 1px solid var(--rule);
-    text-decoration: none;
-  }
-
   .closing {
     color: var(--ink-3);
     font-size: 0.88rem;
@@ -249,33 +316,167 @@ const factsLabel = c.slug === "clearbill" || c.slug === "taxi-pipeline" ? "What 
     margin-bottom: clamp(24px, 4vh, 40px);
   }
 
-  .next-label {
-    display: block;
-    font-family: var(--sans);
-    font-size: 0.85rem;
-    color: var(--ink-3);
-    margin-bottom: 16px;
+  .upcoming {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(16px, 2vw, 28px);
+    padding: clamp(64px, 10vh, 120px) 0 clamp(80px, 12vh, 140px);
+    border-top: 1px solid var(--rule);
   }
 
-  .next-title {
+  .up-card {
+    display: grid;
+    gap: 16px;
+    padding: clamp(20px, 2.4vw, 32px);
+    border: 1px solid var(--rule);
+    border-radius: 20px;
+    transition:
+      border-color 0.35s ease,
+      background-color 0.35s ease;
+  }
+
+  .up-card:active {
+    background: var(--bg-raise);
+  }
+  @media (hover: hover) {
+    .up-card:hover {
+      border-color: var(--ink-3);
+      background: var(--bg-raise);
+    }
+  }
+
+  .up-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--ink-3);
+  }
+
+  .up-arrow {
+    display: inline-grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid var(--rule);
+    color: var(--ink);
+    transition:
+      transform 0.45s var(--ease-out),
+      background-color 0.3s ease,
+      color 0.3s ease;
+  }
+
+  @media (hover: hover) {
+    .up-card:hover .up-arrow {
+      transform: rotate(45deg);
+      background: var(--ink);
+      color: var(--bg);
+    }
+  }
+  .up-card:active .up-arrow {
+    transform: rotate(45deg);
+    background: var(--ink);
+    color: var(--bg);
+  }
+
+  .up-art {
     display: block;
+  }
+
+  .up-art-box {
+    display: block;
+    width: 100%;
+    aspect-ratio: 7 / 5;
+  }
+
+  .up-title {
     font-family: var(--display);
-    font-weight: 300;
-    font-size: clamp(2.6rem, 7vw, 6rem);
+    font-weight: 330;
+    font-size: clamp(1.9rem, 3vw, 2.8rem);
     line-height: 1;
     letter-spacing: -0.035em;
     color: var(--ink);
-    transition: color 0.3s var(--ease-out);
+    transition: color 0.3s ease;
   }
 
-  .next-case:hover .next-title {
-    color: var(--flag);
+  @media (hover: hover) {
+    .up-card:hover .up-title {
+      color: var(--flag);
+    }
+  }
+
+  .up-lead {
+    color: var(--ink-2);
+    max-width: 46ch;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  @media (max-width: 900px) {
+    .hero {
+      grid-template-columns: 1fr;
+    }
+    .upcoming {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (pointer: coarse) {
+    .case > .link-line,
+    .text-link {
+      min-height: 44px;
+    }
+    .case > .link-line {
+      display: inline-flex;
+      align-items: center;
+    }
+    .pill-btn {
+      min-height: 52px;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .case {
+      padding-top: max(104px, calc(84px + env(safe-area-inset-top)));
+    }
+    .hero {
+      gap: 28px;
+      padding-top: 20px;
+    }
+    .hero-title {
+      font-size: clamp(3rem, 15vw, 4.2rem);
+    }
+    /* Primary action spans the width; the quieter links sit under it as a row. */
+    .links-row {
+      gap: 4px 24px;
+    }
+    .pill-btn {
+      width: 100%;
+      justify-content: center;
+      flex: 1 0 100%;
+    }
+    .problem-content p {
+      font-size: 1.05rem;
+    }
+    .up-card {
+      border-radius: 18px;
+    }
+    .upcoming {
+      padding-top: 56px;
+    }
   }
 
   @media (max-width: 760px) {
     .meta {
-      grid-template-columns: 1fr;
-      gap: 16px;
+      grid-template-columns: 1fr 1fr;
+    }
+    .meta-item,
+    .meta-item + .meta-item {
+      padding: 16px 12px 16px 0;
+      border-left: 0;
+      border-bottom: 1px solid var(--rule);
     }
   }
 </style>

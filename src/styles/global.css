@@ -190,3 +190,29 @@ html.lenis body {
     min-height: 44px;
   }
 }
+
+/* Project-page scroll reveals. `cr` is set by an inline script on case pages (not under reduced
+   motion); site.ts adds .is-in as each block arrives, then drops data-r once it has settled. */
+html.cr [data-r] {
+  opacity: 0;
+  transform: translateY(32px);
+  filter: blur(8px);
+  transition:
+    opacity 0.9s var(--ease-out) var(--d, 0s),
+    transform 1.1s var(--ease-out) var(--d, 0s),
+    filter 0.9s var(--ease-out) var(--d, 0s);
+}
+
+html.cr [data-r].is-in {
+  opacity: 1;
+  transform: none;
+  filter: none;
+}
+
+html.cr [data-r-line]:not(.is-in)::before {
+  transform: scaleX(0);
+}
+
+html.cr .case-section-title[data-r]:not(.is-in) .case-section-icon {
+  transform: scale(0.4) rotate(-90deg);
+}
