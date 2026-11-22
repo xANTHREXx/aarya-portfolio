@@ -1,4 +1,5 @@
 ---
+import { withBase } from "../../lib/url";
 import Base from "../../layouts/Base.astro";
 import SiteFooter from "../../components/SiteFooter";
 import CaseSection from "../../components/case/CaseSection.astro";
@@ -47,7 +48,7 @@ const factsLabel = c.slug === "clearbill" || c.slug === "taxi-pipeline" ? "What 
     }
   </script>
   <article class="case">
-    <a href="/#work" class="link-line" data-r>All work</a>
+    <a href={withBase("/#work")} class="link-line" data-r>All work</a>
 
     <header class="hero">
       <div class="hero-copy">
@@ -150,7 +151,7 @@ const factsLabel = c.slug === "clearbill" || c.slug === "taxi-pipeline" ? "What 
 
     <nav class="upcoming" aria-label="More projects">
       {upcoming.map(({ c: u, label, attr }) => (
-        <a class="up-card" data-r href={`/work/${u.slug}/`} {...attr} data-cursor="View">
+        <a class="up-card" data-r href={withBase(`/work/${u.slug}/`)} {...attr} data-cursor="View">
           <span class="up-top">
             <span class="up-label mono">{label}</span>
             <span class="up-arrow"><Icon name="ArrowUpRight" size={20} /></span>

@@ -1,4 +1,5 @@
 ---
+import { withBase } from "../../lib/url";
 import type { Ship, Shot } from "../../data/cases";
 
 interface Props {
@@ -21,7 +22,7 @@ const { ships, shot } = Astro.props;
 
   {shot && (
     <figure class="shipping-shot" data-r>
-      <img src={shot.src} alt={shot.alt} loading="lazy" decoding="async" />
+      <img src={withBase(shot.src)} alt={shot.alt} loading="lazy" decoding="async" />
       {shot.caption && <figcaption>{shot.caption}</figcaption>}
     </figure>
   )}

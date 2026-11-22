@@ -1,4 +1,5 @@
 ---
+import { withBase } from "../lib/url";
 import "../styles/global.css";
 import { person } from "../data/site";
 
@@ -23,7 +24,7 @@ const {
     <meta name="theme-color" content="#131210" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href={withBase("/favicon.svg")} type="image/svg+xml" />
     <script is:inline>
       document.documentElement.classList.add("js");
     </script>
@@ -31,14 +32,14 @@ const {
   <body>
     <a class="skip" href="#main">Skip to content</a>
     <header class="bar" data-bar>
-      <a href="/" class="bar-name">{person.name}</a>
+      <a href={withBase("/")} class="bar-name">{person.name}</a>
       <nav aria-label="Primary">
-        <a href="/#work" class="link-line">Work</a>
-        <a href="/#about" class="link-line">About</a>
-        <a href="/#experience" class="link-line">Experience</a>
-        <a href="/#contact" class="link-line">Contact</a>
+        <a href={withBase("/#work")} class="link-line">Work</a>
+        <a href={withBase("/#about")} class="link-line">About</a>
+        <a href={withBase("/#experience")} class="link-line">Experience</a>
+        <a href={withBase("/#contact")} class="link-line">Contact</a>
       </nav>
-      <a class="bar-cv" href="/aarya-patil-resume.pdf" download="Aarya-Patil-resume.pdf" data-cursor="PDF">
+      <a class="bar-cv" href={withBase("/aarya-patil-resume.pdf")} download="Aarya-Patil-resume.pdf" data-cursor="PDF">
         <span><span class="bar-cv-long">Download </span>résumé</span>
         <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.5v8M4.5 7 8 10.5 11.5 7M3 13.5h10" fill="none" stroke="currentColor" stroke-width="1.5" /></svg>
       </a>
@@ -51,10 +52,10 @@ const {
     </main>
 
     <nav class="dock" aria-label="Sections" data-dock>
-      <a href="/#work" data-dock-link="work">Work</a>
-      <a href="/#about" data-dock-link="about">About</a>
-      <a href="/#experience" data-dock-link="experience">Career</a>
-      <a href="/#contact" data-dock-link="contact">Contact</a>
+      <a href={withBase("/#work")} data-dock-link="work">Work</a>
+      <a href={withBase("/#about")} data-dock-link="about">About</a>
+      <a href={withBase("/#experience")} data-dock-link="experience">Career</a>
+      <a href={withBase("/#contact")} data-dock-link="contact">Contact</a>
     </nav>
 
     <div class="cursor" aria-hidden="true" data-cursor-el>

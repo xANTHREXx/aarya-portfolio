@@ -1,4 +1,5 @@
 ---
+import { withBase } from "../lib/url";
 import Base from "../layouts/Base.astro";
 import SiteFooter from "../components/SiteFooter";
 import { person, work } from "../data/site";
@@ -66,14 +67,14 @@ const marked = new Set(["production", "failures", "checked"]);
               <div><dt>Context</dt><dd class="mono">{w.kind} · {w.year}</dd></div>
             </dl>
             <p class="project-links">
-              <a class="btn btn-quiet" href={`/work/${w.slug}/`} data-cursor="Read" data-magnetic>Read the case study</a>
+              <a class="btn btn-quiet" href={withBase(`/work/${w.slug}/`)} data-cursor="Read" data-magnetic>Read the case study</a>
               {w.live && (
                 <a class="quiet link-line" href={w.live} target="_blank" rel="noopener" data-cursor="Live app" data-magnetic>Open the live app</a>
               )}
             </p>
           </div>
           <figure class="project-art" data-art={w.slug}>
-            <a class="art-link" href={`/work/${w.slug}/`} data-cursor="View" aria-label={`${w.title}: read the case study`}>
+            <a class="art-link" href={withBase(`/work/${w.slug}/`)} data-cursor="View" aria-label={`${w.title}: read the case study`}>
               <div class="art-box" data-art-box></div>
             </a>
           </figure>

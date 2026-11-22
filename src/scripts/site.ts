@@ -70,7 +70,7 @@ function dock() {
   if (!el) return;
   const links = [...el.querySelectorAll<HTMLAnchorElement>("[data-dock-link]")];
   // Case pages: the footer is on this page, so Contact scrolls to it; Work stays marked as the section you're in.
-  if (location.pathname !== "/") {
+  if (document.querySelector("[data-case-title]")) {
     links.find((a) => a.dataset.dockLink === "contact")?.setAttribute("href", "#contact");
     links.find((a) => a.dataset.dockLink === "work")?.setAttribute("aria-current", "true");
     return;
@@ -116,11 +116,13 @@ function scrollProgress() {
 }
 
 function wireAnchors(lenis: Lenis) {
-  for (const a of document.querySelectorAll<HTMLAnchorElement>('a[href^="#"], a[href^="/#"]')) {
+  // Same-page hash links (e.g. "/#about" on the homepage, under any deploy base) scroll smoothly.
+  for (const a of document.querySelectorAll<HTMLAnchorElement>('a[href*="#"]')) {
     a.addEventListener("click", (e) => {
-      const hash = a.getAttribute("href")!.replace(/^\//, "");
+      const url = new URL(a.href);
+      const hash = url.hash;
       const target = hash.length > 1 ? document.querySelector<HTMLElement>(hash) : null;
-      if (!target || location.pathname !== "/") return;
+      if (!target || url.pathname !== location.pathname) return;
       e.preventDefault();
       lenis.scrollTo(target, { duration: 1.4 });
       history.replaceState(null, "", hash);

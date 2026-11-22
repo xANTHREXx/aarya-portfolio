@@ -1,5 +1,6 @@
 import RidgelineDitherFooter from "@/components/ui/ridgeline-dither-footer"
 import { footerRange, person, work } from "@/data/site"
+import { withBase } from "@/lib/url"
 
 /** The site's dot mark, matching the favicon. */
 function DotMark() {
@@ -22,7 +23,7 @@ export default function SiteFooter() {
   return (
     <RidgelineDitherFooter
       name={person.name}
-      brandHref="/"
+      brandHref={withBase("/")}
       logo={<DotMark />}
       tagline="Data pipelines and AI systems, tested before they ship. Bengaluru, India."
       columns={[
@@ -30,16 +31,16 @@ export default function SiteFooter() {
           title: "Work",
           links: work.map((w) => ({
             label: w.title,
-            href: `/work/${w.slug}/`,
+            href: withBase(`/work/${w.slug}/`),
             badge: w.live ? "Live" : undefined,
           })),
         },
         {
           title: "Site",
           links: [
-            { label: "About", href: "/#about" },
-            { label: "Experience", href: "/#experience" },
-            { label: "Contact", href: "/#contact" },
+            { label: "About", href: withBase("/#about") },
+            { label: "Experience", href: withBase("/#experience") },
+            { label: "Contact", href: withBase("/#contact") },
           ],
         },
         {
