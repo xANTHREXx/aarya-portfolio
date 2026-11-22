@@ -1,0 +1,56 @@
+---
+import type { Decision } from "../../data/cases";
+
+interface Props {
+  decisions: Decision[];
+}
+
+const { decisions } = Astro.props;
+---
+
+<div class="decisions-list">
+  {decisions.map((decision) => (
+    <div class="decision-item">
+      <h3 class="decision-title">{decision.title}</h3>
+      <p class="decision-body">{decision.body}</p>
+    </div>
+  ))}
+</div>
+
+<style>
+  .decisions-list {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .decision-item {
+    padding: clamp(20px, 3.5vh, 28px) 0;
+    border-top: 1px solid var(--rule);
+  }
+
+  .decision-item:first-child {
+    border-top: none;
+    padding-top: 0;
+  }
+
+  .decision-item:last-child {
+    padding-bottom: 0;
+  }
+
+  .decision-title {
+    font-family: var(--display);
+    font-weight: 380;
+    font-size: 1.4rem;
+    line-height: 1.25;
+    letter-spacing: -0.015em;
+    color: var(--ink);
+    margin-bottom: 10px;
+  }
+
+  .decision-body {
+    font-size: 1rem;
+    line-height: 1.55;
+    color: var(--ink-2);
+    max-width: 60ch;
+  }
+</style>

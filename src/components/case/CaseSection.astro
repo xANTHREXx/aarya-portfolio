@@ -1,0 +1,50 @@
+---
+interface Props {
+  name: string;
+  label: string;
+}
+
+const { name, label } = Astro.props;
+---
+
+<section class="case-section" data-case-section={name}>
+  <h2 class="case-section-title">{label}</h2>
+  <div class="case-section-content">
+    <slot />
+  </div>
+</section>
+
+<style>
+  .case-section {
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(0, 9fr);
+    gap: clamp(24px, 4vw, 64px);
+    padding: clamp(56px, 9vh, 96px) 0;
+    border-top: 1px solid var(--rule);
+  }
+
+  .case-section-title {
+    font-family: var(--sans);
+    font-size: 0.95rem;
+    font-weight: 560;
+    color: var(--ink-2);
+    align-self: start;
+    position: sticky;
+    top: 96px;
+  }
+
+  .case-section-content {
+    min-width: 0;
+  }
+
+  @media (max-width: 900px) {
+    .case-section {
+      grid-template-columns: 1fr;
+      gap: 24px;
+    }
+
+    .case-section-title {
+      position: static;
+    }
+  }
+</style>

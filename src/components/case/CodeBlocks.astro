@@ -1,0 +1,94 @@
+---
+import type { Snippet } from "../../data/cases";
+
+interface Props {
+  snippets: Snippet[];
+}
+
+const { snippets } = Astro.props;
+---
+
+<div class="code-blocks">
+  {snippets.map((snippet) => (
+    <figure class="code-figure">
+      <figcaption class="code-header">
+        <span class="code-title">{snippet.title}</span>
+        <span class="code-file">{snippet.file}</span>
+      </figcaption>
+      <pre><code>{snippet.code}</code></pre>
+      {snippet.note && <p class="code-note">{snippet.note}</p>}
+    </figure>
+  ))}
+</div>
+
+<style>
+  .code-blocks {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+
+  .code-figure {
+    margin: 0;
+  }
+
+  .code-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 16px;
+    margin-bottom: 10px;
+  }
+
+  .code-title {
+    font-weight: 560;
+    color: var(--ink);
+    font-size: 0.95rem;
+  }
+
+  .code-file {
+    font-family: var(--mono);
+    color: var(--ink-3);
+    font-size: 0.85rem;
+  }
+
+  pre {
+    background: var(--bg-raise);
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    line-height: 1.6;
+    padding: 18px 20px;
+    overflow-x: auto;
+    border: 1px solid var(--rule);
+    border-radius: 10px;
+    margin: 0;
+    scrollbar-width: thin;
+    scrollbar-color: var(--rule) transparent;
+  }
+
+  pre::-webkit-scrollbar {
+    height: 6px;
+  }
+
+  pre::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  pre::-webkit-scrollbar-thumb {
+    background-color: var(--rule);
+    border-radius: 999px;
+  }
+
+  code {
+    font-family: inherit;
+    font-size: inherit;
+    color: var(--ink);
+  }
+
+  .code-note {
+    margin-top: 10px;
+    color: var(--ink-2);
+    font-size: 0.92rem;
+    line-height: 1.5;
+  }
+</style>

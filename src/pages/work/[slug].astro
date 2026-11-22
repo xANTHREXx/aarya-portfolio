@@ -1,69 +1,281 @@
 ---
 import Base from "../../layouts/Base.astro";
-import { work, clearbill } from "../../data/site";
+import SiteFooter from "../../components/SiteFooter";
+import CaseSection from "../../components/case/CaseSection.astro";
+import Flow from "../../components/case/Flow.astro";
+import Facts from "../../components/case/Facts.astro";
+import Shots from "../../components/case/Shots.astro";
+import CodeBlocks from "../../components/case/CodeBlocks.astro";
+import Decisions from "../../components/case/Decisions.astro";
+import Shipping from "../../components/case/Shipping.astro";
+import NextList from "../../components/case/NextList.astro";
+import { cases, getCase, type CaseStudy } from "../../data/cases";
 
 export function getStaticPaths() {
-  return work.map((w) => ({ params: { slug: w.slug }, props: { w } }));
+  return cases.map((c) => ({
+    params: { slug: c.slug },
+    props: { c },
+  }));
 }
 
-const { w } = Astro.props;
+interface Props {
+  c: CaseStudy;
+}
+
+const { c } = Astro.props;
+const currentIndex = cases.findIndex((item) => item.slug === c.slug);
+const next = cases[(currentIndex + 1) % cases.length];
+
+const factsLabel = c.slug === "clearbill" || c.slug === "taxi-pipeline" ? "What it shows" : "Results";
 ---
 
-<Base title={`${w.title} — Aarya Patil`} description={w.summary}>
+<Base title={`${c.title} — Aarya Patil`} description={c.lead}>
   <article class="case">
-    <a href="/#work" class="back link-line">All work</a>
-    <h1>{w.title}</h1>
-    <p class="lead">{w.summary}</p>
-    <p class="mono meta">{w.kind} · {w.year} · {w.stack}</p>
-    {
-      w.slug === "clearbill" && (
-        <p class="links">
-          <a class="link-line" href={clearbill.live} target="_blank" rel="noopener">Open the live app</a>
-          <a class="link-line" href={clearbill.repo} target="_blank" rel="noopener">Code on GitHub</a>
-        </p>
-      )
-    }
-    <p class="pending">The full case study for this project is being written.</p>
+    <a href="/#work" class="link-line">All work</a>
+
+    <header class="hero">
+      <h1 class="hero-title">{c.title}</h1>
+      <p class="lead">{c.lead}</p>
+
+      <dl class="meta">
+        {c.meta.map((m) => (
+          <div class="meta-item">
+            <dt class="meta-label">{m.label}</dt>
+            <dd class="meta-value">{m.value}</dd>
+          </div>
+        ))}
+      </dl>
+
+      {c.links && c.links.length > 0 && (
+        <div class="links-row">
+          {c.links.map((link, i) => {
+            const isExternal = !link.href.startsWith("/") && !link.href.startsWith("#");
+            const targetRel = isExternal ? { target: "_blank", rel: "noopener" } : {};
+            return i === 0 ? (
+              <a class="pill-btn" href={link.href} {...targetRel}>
+                {link.label}
+              </a>
+            ) : (
+              <a class="link-line" href={link.href} {...targetRel}>
+                {link.label}
+              </a>
+            );
+          })}
+        </div>
+      )}
+    </header>
+
+    {c.problem && c.problem.length > 0 && (
+      <CaseSection name="problem" label="The problem">
+        <div class="problem-content">
+          {c.problem.map((p) => (
+            <p>{p}</p>
+          ))}
+        </div>
+      </CaseSection>
+    )}
+
+    {c.flow && c.flow.length > 0 && (
+      <CaseSection name="flow" label={c.flowTitle}>
+        <Flow steps={c.flow} note={c.flowNote} />
+      </CaseSection>
+    )}
+
+    {c.facts && c.facts.length > 0 && (
+      <CaseSection name="facts" label={factsLabel}>
+        <Facts facts={c.facts} note={c.factsNote} />
+      </CaseSection>
+    )}
+
+    {c.shots && c.shots.length > 0 && (
+      <CaseSection name="shots" label="Screens">
+        <Shots shots={c.shots} />
+      </CaseSection>
+    )}
+
+    {c.snippets && c.snippets.length > 0 && (
+      <CaseSection name="code" label="The real code">
+        <CodeBlocks snippets={c.snippets} />
+      </CaseSection>
+    )}
+
+    {c.decisions && c.decisions.length > 0 && (
+      <CaseSection name="decisions" label="Decisions">
+        <Decisions decisions={c.decisions} />
+      </CaseSection>
+    )}
+
+    {c.shipping && c.shipping.length > 0 && (
+      <CaseSection name="shipping" label="How it ships">
+        <Shipping ships={c.shipping} shot={c.shippingShot} />
+      </CaseSection>
+    )}
+
+    {c.next && c.next.length > 0 && (
+      <CaseSection name="next" label="What I'd fix next">
+        <NextList items={c.next} />
+      </CaseSection>
+    )}
+
+    {c.closing && (
+      <p class="closing">{c.closing}</p>
+    )}
+
+    <a data-next-case href={`/work/${next.slug}/`} class="next-case">
+      <span class="next-label">Next project</span>
+      <span class="next-title">{next.title}</span>
+    </a>
   </article>
+
+  <div id="contact" data-footer>
+    <SiteFooter client:visible />
+  </div>
 </Base>
 
 <style>
   .case {
-    min-height: 100vh;
-    padding: 160px var(--gutter) 96px;
-    max-width: 1100px;
+    padding: 160px var(--gutter) 0;
   }
-  .back {
+
+  .case > .link-line {
     color: var(--ink-2);
+    display: inline-block;
+    font-size: 0.95rem;
   }
-  h1 {
-    margin-top: 48px;
+
+  .hero {
+    padding-bottom: clamp(48px, 6vh, 64px);
+  }
+
+  .hero-title {
     font-family: var(--display);
     font-weight: 300;
-    font-size: clamp(3rem, 8vw, 6rem);
-    letter-spacing: -0.04em;
-    line-height: 0.95;
+    font-size: clamp(3.4rem, 10vw, 9rem);
+    line-height: 0.92;
+    letter-spacing: -0.045em;
+    margin-top: 40px;
+    color: var(--ink);
   }
+
   .lead {
-    margin-top: 28px;
-    max-width: 40ch;
     font-family: var(--display);
     font-weight: 330;
-    font-size: clamp(1.4rem, 2.4vw, 2rem);
-    line-height: 1.2;
+    font-size: clamp(1.5rem, 2.6vw, 2.4rem);
+    line-height: 1.15;
     letter-spacing: -0.02em;
+    max-width: 30ch;
+    color: var(--ink);
+    margin-top: clamp(28px, 4vh, 40px);
   }
+
   .meta {
-    margin-top: 24px;
-    color: var(--ink-2);
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px clamp(24px, 4vw, 48px);
+    margin-top: clamp(40px, 6vh, 60px);
+    padding-top: clamp(24px, 3.5vh, 36px);
+    border-top: 1px solid var(--rule);
   }
-  .links {
-    display: flex;
-    gap: 28px;
-    margin-top: 36px;
-  }
-  .pending {
-    margin-top: 72px;
+
+  .meta-label {
+    font-family: var(--sans);
+    font-size: 0.85rem;
     color: var(--ink-3);
+    margin-bottom: 4px;
+  }
+
+  .meta-value {
+    color: var(--ink-2);
+    font-size: 1rem;
+    line-height: 1.45;
+  }
+
+  .links-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: clamp(16px, 3vw, 28px);
+    margin-top: clamp(36px, 5vh, 48px);
+  }
+
+  .pill-btn {
+    display: inline-block;
+    border-radius: 999px;
+    padding: 14px 22px;
+    background: var(--ink);
+    color: var(--bg);
+    font-weight: 560;
+    line-height: 1;
+    text-decoration: none;
+    transition: opacity 0.2s var(--ease-out);
+  }
+
+  .pill-btn:hover {
+    opacity: 0.9;
+  }
+
+  .links-row .link-line {
+    color: var(--ink-2);
+    font-size: 0.95rem;
+  }
+
+  .links-row .link-line:hover {
+    color: var(--ink);
+  }
+
+  .problem-content p {
+    font-size: 1.15rem;
+    line-height: 1.6;
+    color: var(--ink-2);
+    max-width: 62ch;
+  }
+
+  .problem-content p + p {
+    margin-top: 1.25em;
+  }
+
+  .next-case {
+    display: block;
+    padding: clamp(80px, 14vh, 160px) 0;
+    border-top: 1px solid var(--rule);
+    text-decoration: none;
+  }
+
+  .closing {
+    color: var(--ink-3);
+    font-size: 0.88rem;
+    line-height: 1.5;
+    margin-top: clamp(40px, 6vh, 60px);
+    margin-bottom: clamp(24px, 4vh, 40px);
+  }
+
+  .next-label {
+    display: block;
+    font-family: var(--sans);
+    font-size: 0.85rem;
+    color: var(--ink-3);
+    margin-bottom: 16px;
+  }
+
+  .next-title {
+    display: block;
+    font-family: var(--display);
+    font-weight: 300;
+    font-size: clamp(2.6rem, 7vw, 6rem);
+    line-height: 1;
+    letter-spacing: -0.035em;
+    color: var(--ink);
+    transition: color 0.3s var(--ease-out);
+  }
+
+  .next-case:hover .next-title {
+    color: var(--flag);
+  }
+
+  @media (max-width: 760px) {
+    .meta {
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
   }
 </style>

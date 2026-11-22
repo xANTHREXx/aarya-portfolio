@@ -1,0 +1,95 @@
+---
+import type { Ship, Shot } from "../../data/cases";
+
+interface Props {
+  ships: Ship[];
+  shot?: Shot;
+}
+
+const { ships, shot } = Astro.props;
+---
+
+<div class="shipping">
+  <div class="shipping-list">
+    {ships.map((ship) => (
+      <div class="shipping-row">
+        <span class="shipping-trigger">{ship.trigger}</span>
+        <span class="shipping-route">{ship.route}</span>
+      </div>
+    ))}
+  </div>
+
+  {shot && (
+    <figure class="shipping-shot">
+      <img src={shot.src} alt={shot.alt} loading="lazy" decoding="async" />
+      {shot.caption && <figcaption>{shot.caption}</figcaption>}
+    </figure>
+  )}
+</div>
+
+<style>
+  .shipping-list {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .shipping-row {
+    display: grid;
+    grid-template-columns: minmax(180px, 240px) minmax(0, 1fr);
+    gap: 12px 24px;
+    padding: clamp(14px, 2.5vh, 20px) 0;
+    border-top: 1px solid var(--rule);
+  }
+
+  .shipping-row:first-child {
+    border-top: none;
+    padding-top: 0;
+  }
+
+  .shipping-row:last-child {
+    padding-bottom: 0;
+  }
+
+  .shipping-trigger {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--flag);
+    line-height: 1.5;
+  }
+
+  .shipping-route {
+    font-family: var(--mono);
+    font-size: 0.9rem;
+    color: var(--ink-2);
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+  }
+
+  .shipping-shot {
+    margin-top: clamp(32px, 5vh, 48px);
+    width: 100%;
+  }
+
+  .shipping-shot img {
+    width: 100%;
+    border-radius: 12px;
+    border: 1px solid var(--rule);
+    display: block;
+  }
+
+  .shipping-shot figcaption {
+    margin-top: 10px;
+    font-size: 0.9rem;
+    color: var(--ink-2);
+    line-height: 1.4;
+  }
+
+  @media (max-width: 760px) {
+    .shipping-row {
+      grid-template-columns: 1fr;
+      gap: 6px;
+    }
+  }
+</style>
